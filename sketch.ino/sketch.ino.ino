@@ -1,28 +1,23 @@
+//#include <CaptureTimer.h>
 #include <ESP8266HTTPClient.h>
-
-
 #include <ESP8266WiFi.h>
 
-
- 
+//unsigned long time;
 const char* ssid = "GrzesioNet";
 const char* password = "UBPUKBQB";
- 
-; // 
+int timer;
+int mot;
 WiFiServer server(80);
  
 void setup() {
+
+  
   Serial.begin(9600);
   delay(10);
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
   
   // Connect to WiFi network
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
- 
   WiFi.begin(ssid, password);
  
   while (WiFi.status() != WL_CONNECTED) {
@@ -31,7 +26,7 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
- 
+
   // Start the server
   server.begin();
   Serial.println("Server started");
@@ -44,21 +39,18 @@ void setup() {
 
 //detector
 pinMode(15, INPUT);
-
- 
 }
  
 void loop() {
 
-  int mot;
-  
-  if(mot != digitalRead(15)){
+  if(digitalRead(15)==1 && timer<millis()){
     digitalWrite(13, HIGH);
     HTTPClient http;
-    http.begin("http://192.168.0.17:3000/motion");
-     Serial.println(http.GET());
+    http.begin("http://192.168.0.14:3000/motion");
+    http.GET();
     http.end();
-    int mot = digitalRead(15);
+    timer = millis()+60000;
+     mot = digitalRead(15);
   }else{
      digitalWrite(13, LOW);
   }
@@ -79,19 +71,16 @@ void loop() {
   String request = client.readStringUntil('\r');
   Serial.println(request);
   client.flush();
- 
-  // Match the request
- 
- 
- 
-   if (request.indexOf("/bulbOn") > 0)  {
+  
+  /*if (request.indexOf("/timer:") > 0)  {
+     timerStr = request.substring(request.indexOf("/timer")+7,request.lastIndexOf(" "));
+     timer = timerStr.toInt()+180;
+  }*/
+  if (request.indexOf("/bulbOn") > 0)  {
     digitalWrite(13, HIGH);
-    
-   
   }
   if (request.indexOf("/bulbOff") > 0)  {
     digitalWrite(13, LOW);
-   
   }
 // Set ledPin according to the request
 //digitalWrite(ledPin, value);
@@ -99,7 +88,7 @@ void loop() {
   // Return the response
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
-  client.println(""); //  do not forget this one
+  client.println(""); 
   client.println("<!DOCTYPE HTML>");
   client.println("<html>");
   client.println("<head>");
