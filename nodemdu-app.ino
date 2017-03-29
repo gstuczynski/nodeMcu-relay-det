@@ -1,12 +1,15 @@
-//#include <CaptureTimer.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 
 //unsigned long time;
 const char* ssid = "GrzesioNet";
 const char* password = "UBPUKBQB";
+IPAddress ip(192, 168, 0, 101);
+IPAddress gateway(192, 168, 0, 1);
+IPAddress subnet(255, 255, 255, 0);
 int timer;
 int mot;
+
 WiFiServer server(80);
  
 void setup() {
@@ -19,6 +22,7 @@ void setup() {
   
   // Connect to WiFi network
   WiFi.begin(ssid, password);
+WiFi.config(ip, gateway, subnet);
  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -46,7 +50,7 @@ void loop() {
   if(digitalRead(15)==1 && timer<millis()){
     digitalWrite(13, HIGH);
     HTTPClient http;
-    http.begin("http://192.168.0.14:3000/motion");
+    http.begin("http://192.168.0.100:3000/motion");
     http.GET();
     http.end();
     timer = millis()+60000;
